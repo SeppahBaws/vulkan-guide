@@ -7,39 +7,39 @@
 #include <vk_types.h>
 #include <vk_initializers.h>
 
-void VulkanEngine::init()
+void VulkanEngine::Init()
 {
 	// We initialize SDL and create a window with it. 
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);
 	
-	_window = SDL_CreateWindow(
+	m_Window = SDL_CreateWindow(
 		"Vulkan Engine",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
-		_windowExtent.width,
-		_windowExtent.height,
+		m_WindowExtent.width,
+		m_WindowExtent.height,
 		window_flags
 	);
 	
 	//everything went fine
-	_isInitialized = true;
+	m_Isinitialized = true;
 }
-void VulkanEngine::cleanup()
+void VulkanEngine::Cleanup()
 {	
-	if (_isInitialized) {
+	if (m_Isinitialized) {
 		
-		SDL_DestroyWindow(_window);
+		SDL_DestroyWindow(m_Window);
 	}
 }
 
-void VulkanEngine::draw()
+void VulkanEngine::Draw()
 {
 	//nothing yet
 }
 
-void VulkanEngine::run()
+void VulkanEngine::Run()
 {
 	SDL_Event e;
 	bool bQuit = false;
@@ -54,7 +54,7 @@ void VulkanEngine::run()
 			if (e.type == SDL_QUIT) bQuit = true;
 		}
 
-		draw();
+		Draw();
 	}
 }
 

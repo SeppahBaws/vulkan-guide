@@ -5,8 +5,8 @@
 
 #include <vk_types.h>
 
-namespace vkinit {
-
+namespace VkInit
+{
 	//vulkan init code goes here
 }
 
