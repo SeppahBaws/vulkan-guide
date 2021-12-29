@@ -138,7 +138,6 @@ private:
 
 	VkPipelineLayout m_TrianglePipelineLayout;
 	VkPipeline m_TrianglePipeline;
-	VkPipeline m_RedTrianglePipeline;
 
 	VmaAllocator m_Allocator;
 
@@ -157,6 +156,4 @@ private:
 
 	std::unordered_map<std::string, Material> m_Materials;
 	std::unordered_map<std::string, Mesh> m_Meshes;
-
-	int m_SelectedShader{ 0 };
 };

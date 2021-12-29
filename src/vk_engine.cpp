@@ -164,12 +164,12 @@ void VulkanEngine::Draw()
 	rpInfo.renderArea.offset = VkOffset2D{ 0, 0 };
 	rpInfo.renderArea.extent = m_WindowExtent;
 	rpInfo.framebuffer = m_Framebuffers[swapchainImageIndex];
-	rpInfo.clearValueCount = clearValues.size();
+	rpInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 	rpInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(cmd, &rpInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	DrawObjects(cmd, m_Renderables.data(), m_Renderables.size());
+	DrawObjects(cmd, m_Renderables.data(), static_cast<int>(m_Renderables.size()));
 
 	vkCmdEndRenderPass(cmd);
 	VK_CHECK(vkEndCommandBuffer(cmd));
@@ -217,17 +217,6 @@ void VulkanEngine::Run()
 		{
 			//close the window when user alt-f4s or clicks the X button			
 			if (e.type == SDL_QUIT) bQuit = true;
-			else if (e.type == SDL_KEYDOWN)
-			{
-				if (e.key.keysym.sym == SDLK_SPACE)
-				{
-					m_SelectedShader += 1;
-					if (m_SelectedShader > 1)
-					{
-						m_SelectedShader = 0;
-					}
-				}
-			}
 		}
 
 		Draw();
@@ -378,7 +367,7 @@ void VulkanEngine::InitDefaultRenderpass()
 
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = attachments.size();
+	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
@@ -409,7 +398,7 @@ void VulkanEngine::InitFramebuffers()
 	{
 		std::array<VkImageView, 2> attachments = { m_SwapchainImageViews[i], m_DepthImageView };
 
-		fbInfo.attachmentCount = attachments.size();
+		fbInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		fbInfo.pAttachments = attachments.data();
 
 		VK_CHECK(vkCreateFramebuffer(m_Device, &fbInfo, nullptr, &m_Framebuffers[i]));
@@ -473,26 +462,6 @@ void VulkanEngine::InitPipelines()
 		std::cout << "colored_triangle vertex shader successfully loaded" << std::endl;
 	}
 
-	VkShaderModule redTriangleFragShader;
-	if (!LoadShaderModule("../../shaders/triangle.frag.spv", &redTriangleFragShader))
-	{
-		std::cout << "Error when building the red triangle fragment shader module" << std::endl;
-	}
-	else
-	{
-		std::cout << "red triangle fragment shader successfully loaded" << std::endl;
-	}
-
-	VkShaderModule redTriangleVertexShader;
-	if (!LoadShaderModule("../../shaders/triangle.vert.spv", &redTriangleVertexShader))
-	{
-		std::cout << "Error when building the red triangle vertex shader module" << std::endl;
-	}
-	else
-	{
-		std::cout << "red triangle vertex shader successfully loaded" << std::endl;
-	}
-
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
 	VK_CHECK(vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_TrianglePipelineLayout));
 
@@ -523,21 +492,13 @@ void VulkanEngine::InitPipelines()
 
 	m_TrianglePipeline = pipelineBuilder.BuildPipeline(m_Device, m_RenderPass);
 
-	pipelineBuilder.shaderStages.clear();
-
-	pipelineBuilder.shaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, redTriangleVertexShader));
-	pipelineBuilder.shaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, redTriangleFragShader));
-
-	m_RedTrianglePipeline = pipelineBuilder.BuildPipeline(m_Device, m_RenderPass);
-
-	
 	VertexInputDescription vertexDescription = Vertex::GetVertexDescrption();
 
 	pipelineBuilder.vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
-	pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
+	pipelineBuilder.vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexDescription.attributes.size());
 
 	pipelineBuilder.vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
-	pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
+	pipelineBuilder.vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexDescription.bindings.size());
 
 	pipelineBuilder.shaderStages.clear();
 
@@ -555,9 +516,6 @@ void VulkanEngine::InitPipelines()
 	pipelineBuilder.shaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, meshVertShader));
 	pipelineBuilder.shaderStages.push_back(VkInit::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader));
 
-	m_MeshPipeline = pipelineBuilder.BuildPipeline(m_Device, m_RenderPass);
-
-
 	VkPipelineLayoutCreateInfo meshPipelineLayoutInfo = VkInit::PipelineLayoutCreateInfo();
 
 	VkPushConstantRange pushConstant;
@@ -573,18 +531,15 @@ void VulkanEngine::InitPipelines()
 	pipelineBuilder.pipelineLayout = m_MeshPipelineLayout;
 	m_MeshPipeline = pipelineBuilder.BuildPipeline(m_Device, m_RenderPass);
 
-	CreateMaterial(m_MeshPipeline, m_MeshPipelineLayout, "defaultMesh");
+	CreateMaterial(m_MeshPipeline, m_MeshPipelineLayout, "defaultMaterial");
 
 	
 	vkDestroyShaderModule(m_Device, meshVertShader, nullptr);
-	vkDestroyShaderModule(m_Device, redTriangleVertexShader, nullptr);
-	vkDestroyShaderModule(m_Device, redTriangleFragShader, nullptr);
 	vkDestroyShaderModule(m_Device, triangleVertexShader, nullptr);
 	vkDestroyShaderModule(m_Device, triangleFragShader, nullptr);
 
 	m_MainDeletionQueue.PushFunction([=]()
 	{
-		vkDestroyPipeline(m_Device, m_RedTrianglePipeline, nullptr);
 		vkDestroyPipeline(m_Device, m_TrianglePipeline, nullptr);
 		vkDestroyPipeline(m_Device, m_MeshPipeline, nullptr);
 
@@ -601,9 +556,9 @@ void VulkanEngine::LoadMeshes()
 	m_TriangleMesh.vertices[1].position = { -1.0f, 1.0f, 0.0f };
 	m_TriangleMesh.vertices[2].position = { 0.0f, -1.0f, 0.0f };
 
-	m_TriangleMesh.vertices[0].color = {0.0f, 1.0f, 0.0f };
-	m_TriangleMesh.vertices[1].color = {0.0f, 1.0f, 0.0f };
-	m_TriangleMesh.vertices[2].color = {0.0f, 1.0f, 0.0f };
+	m_TriangleMesh.vertices[0].color = { 0.0f, 1.0f, 0.0f };
+	m_TriangleMesh.vertices[1].color = { 0.0f, 1.0f, 0.0f };
+	m_TriangleMesh.vertices[2].color = { 0.0f, 1.0f, 0.0f };
 
 	m_MonkeyMesh.LoadFromObj("../../assets/monkey_smooth.obj");
 
@@ -618,7 +573,7 @@ void VulkanEngine::InitScene()
 {
 	RenderObject monkey;
 	monkey.mesh = GetMesh("monkey");
-	monkey.material = GetMaterial("defaultMesh");
+	monkey.material = GetMaterial("defaultMaterial");
 	monkey.transformMatrix = glm::mat4{ 1.0f };
 
 	m_Renderables.push_back(monkey);
@@ -629,7 +584,7 @@ void VulkanEngine::InitScene()
 		{
 			RenderObject tri;
 			tri.mesh = GetMesh("triangle");
-			tri.material = GetMaterial("defaultMesh");
+			tri.material = GetMaterial("defaultMaterial");
 			glm::mat4 translation = glm::translate(glm::mat4{ 1.0f }, glm::vec3{ x, 0, y });
 			glm::mat4 scale = glm::scale(glm::mat4{ 1.0f }, glm::vec3{ 0.2f, 0.2f, 0.2f });
 			tri.transformMatrix = translation * scale;
@@ -651,7 +606,7 @@ bool VulkanEngine::LoadShaderModule(const char* filePath, VkShaderModule* outSha
 	size_t fileSize = static_cast<size_t>(file.tellg());
 	std::vector<uint32_t> buffer(fileSize / sizeof(uint32_t));
 	file.seekg(0);
-	file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
+	file.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(fileSize));
 	file.close();
 
 	VkShaderModuleCreateInfo createInfo = {};
@@ -755,6 +710,6 @@ void VulkanEngine::DrawObjects(VkCommandBuffer cmd, RenderObject* first, int cou
 			vkCmdBindVertexBuffers(cmd, 0, 1, &object.mesh->vertexBuffer.buffer, &offset);
 			lastMesh = object.mesh;
 		}
-		vkCmdDraw(cmd, object.mesh->vertices.size(), 1, 0, 0);
+		vkCmdDraw(cmd, static_cast<uint32_t>(object.mesh->vertices.size()), 1, 0, 0);
 	}
 }
