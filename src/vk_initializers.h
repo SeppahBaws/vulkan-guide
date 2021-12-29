@@ -18,5 +18,10 @@ namespace VkInit
 	VkPipelineMultisampleStateCreateInfo MultisampleStateCreateInfo();
 	VkPipelineColorBlendAttachmentState ColorBlendAttachmentState();
 	VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo();
+	VkPipelineDepthStencilStateCreateInfo DepthStencilCreateInfo(bool depthTest, bool depthWrite, VkCompareOp compareOp);
+
+	VkImageCreateInfo ImageCreateInfo(VkFormat format, VkImageUsageFlags usageFlags, VkExtent3D extent);
+	VkImageViewCreateInfo ImageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags);
+
 }
 

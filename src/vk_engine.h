@@ -8,6 +8,29 @@
 #include <deque>
 #include <functional>
 
+#include "vk_mesh.h"
+
+#include <glm/glm.hpp>
+
+struct Material
+{
+	VkPipeline pipeline;
+	VkPipelineLayout pipelineLayout;
+};
+
+struct RenderObject
+{
+	Mesh* mesh;
+	Material* material;
+	glm::mat4 transformMatrix;
+};
+
+struct MeshPushConstants
+{
+	glm::vec4 data;
+	glm::mat4 renderMatrix;
+};
+
 class PipelineBuilder
 {
 public:
@@ -22,6 +45,7 @@ public:
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 	VkPipelineMultisampleStateCreateInfo multisampling;
 	VkPipelineLayout pipelineLayout;
+	VkPipelineDepthStencilStateCreateInfo depthStencil;
 };
 
 struct DeletionQueue
@@ -68,8 +92,17 @@ private:
 	void InitFramebuffers();
 	void InitSyncStructures();
 	void InitPipelines();
+	void LoadMeshes();
+	void InitScene();
 
 	bool LoadShaderModule(const char* filePath, VkShaderModule* outShaderModule);
+	void UploadMesh(Mesh& mesh);
+
+	Material* CreateMaterial(VkPipeline pipeline, VkPipelineLayout layout, const std::string& name);
+	Material* GetMaterial(const std::string& name);
+	Mesh* GetMesh(const std::string& name);
+
+	void DrawObjects(VkCommandBuffer cmd, RenderObject* first, int count);
 
 private:
 	bool m_Isinitialized{ false };
@@ -107,6 +140,23 @@ private:
 	VkPipeline m_TrianglePipeline;
 	VkPipeline m_RedTrianglePipeline;
 
+	VmaAllocator m_Allocator;
+
+	VkPipeline m_MeshPipeline;
+	Mesh m_TriangleMesh;
+	VkPipelineLayout m_MeshPipelineLayout;
+
+	Mesh m_MonkeyMesh;
+
+	VkImageView m_DepthImageView;
+	AllocatedImage m_DepthImage;
+
+	VkFormat m_DepthFormat;
+
+	std::vector<RenderObject> m_Renderables;
+
+	std::unordered_map<std::string, Material> m_Materials;
+	std::unordered_map<std::string, Mesh> m_Meshes;
 
 	int m_SelectedShader{ 0 };
 };
