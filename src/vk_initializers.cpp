@@ -27,6 +27,28 @@ namespace VkInit
 		return info;
 	}
 
+	VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags)
+	{
+		VkFenceCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		info.pNext = nullptr;
+
+		info.flags = flags;
+
+		return info;
+	}
+
+	VkSemaphoreCreateInfo SemaphoreCreateInfo()
+	{
+		VkSemaphoreCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		info.pNext = nullptr;
+
+		info.flags = 0;
+
+		return info;
+	}
+
 	VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule)
 	{
 		VkPipelineShaderStageCreateInfo info = {};
@@ -177,5 +199,32 @@ namespace VkInit
 		info.subresourceRange.aspectMask = aspectFlags;
 
 		return info;
+	}
+
+	VkDescriptorSetLayoutBinding DescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, uint32_t binding)
+	{
+		VkDescriptorSetLayoutBinding setBind = {};
+		setBind.binding = binding;
+		setBind.descriptorCount = 1;
+		setBind.descriptorType = type;
+		setBind.pImmutableSamplers = nullptr;
+		setBind.stageFlags = stageFlags;
+
+		return setBind;
+	}
+
+	VkWriteDescriptorSet WriteDescriptorSet(VkDescriptorType type, VkDescriptorSet dstSet, VkDescriptorBufferInfo* bufferInfo, uint32_t binding)
+	{
+		VkWriteDescriptorSet write = {};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.pNext = nullptr;
+
+		write.dstBinding = binding;
+		write.dstSet = dstSet;
+		write.descriptorCount = 1;
+		write.descriptorType = type;
+		write.pBufferInfo = bufferInfo;
+
+		return write;
 	}
 }
